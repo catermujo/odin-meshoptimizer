@@ -13,9 +13,9 @@ import "core:c"
 when ODIN_OS == .Windows {
     foreign import lib "meshoptimizer.lib"
 } else when ODIN_OS == .Darwin {
-    foreign import lib "libmeshoptimizer.a"
+    foreign import lib "meshoptimizer.darwin.a"
 } else {
-    foreign import lib "libmeshoptimizer.a"
+    foreign import lib "meshoptimizer.linux.a"
 }
 
 
