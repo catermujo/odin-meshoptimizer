@@ -17,7 +17,7 @@ if ! command -v make &>/dev/null && ! command -v ninja &>/dev/null; then
     exit 1
 fi
 
-[ -d meshoptimizer ] || git clone https://github.com/zeux/meshoptimizer meshoptimizer
+[ -d meshoptimizer ] || git clone https://github.com/zeux/meshoptimizer --depth=1
 
 # Set source and build directories
 SOURCE_DIR="./meshoptimizer"
