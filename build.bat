@@ -2,7 +2,7 @@
 
 setlocal EnableDelayedExpansion
 
-if not exist meshoptimizer\NUL (
+if not exist meshoptimizer (
     git clone https://github.com/zeux/meshoptimizer --depth=1
 )
 
