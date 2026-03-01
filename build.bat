@@ -3,7 +3,7 @@
 setlocal EnableDelayedExpansion
 
 if not exist meshoptimizer (
-    git clone https://github.com/zeux/meshoptimizer --depth=1
+    git clone --revision 3c1647e4aeb2cbdca6f11d4f4f4f694da2ff49a4 https://github.com/zeux/meshoptimizer --depth=1
 )
 
 set binaries_dir=build
