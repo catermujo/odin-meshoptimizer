@@ -17,7 +17,23 @@ if ! command -v make &>/dev/null && ! command -v ninja &>/dev/null; then
     exit 1
 fi
 
-[ -d meshoptimizer ] || git clone --revision 3c1647e4aeb2cbdca6f11d4f4f4f694da2ff49a4 https://github.com/zeux/meshoptimizer --depth=1
+clone_at_revision() {
+    local dir="$1"
+    local revision="$2"
+    local remote="$3"
+    shift 3
+    [ -d "$dir" ] && return
+    git clone "$@" "$remote" "$dir"
+    if ! git -C "$dir" checkout --detach "$revision"; then
+        git -C "$dir" fetch origin "$revision"
+        git -C "$dir" checkout --detach FETCH_HEAD
+    fi
+    if [ -f "$dir/.gitmodules" ]; then
+        git -C "$dir" submodule update --init --recursive
+    fi
+}
+
+clone_at_revision meshoptimizer 3c1647e4aeb2cbdca6f11d4f4f4f694da2ff49a4 https://github.com/zeux/meshoptimizer --depth=1
 
 # Set source and build directories
 SOURCE_DIR="./meshoptimizer"
