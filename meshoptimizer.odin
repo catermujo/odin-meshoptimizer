@@ -9,11 +9,31 @@ package meshopt
 import "core:c"
 
 when ODIN_OS == .Windows {
-    foreign import lib "meshoptimizer.lib"
+    when ODIN_ARCH == .amd64 {
+        foreign import lib "windows_x64/meshoptimizer.lib"
+    } else when ODIN_ARCH == .arm64 {
+        foreign import lib "windows_arm64/meshoptimizer.lib"
+    } else {
+        #panic("vendor/meshopt supports windows amd64/arm64 only")
+    }
 } else when ODIN_OS == .Darwin {
-    foreign import lib "meshoptimizer.darwin.a"
+    when ODIN_ARCH == .amd64 {
+        foreign import lib "darwin_x64/meshoptimizer.darwin.a"
+    } else when ODIN_ARCH == .arm64 {
+        foreign import lib "darwin_arm64/meshoptimizer.darwin.a"
+    } else {
+        #panic("vendor/meshopt supports Darwin amd64/arm64 only")
+    }
+} else when ODIN_OS == .Linux {
+    when ODIN_ARCH == .amd64 {
+        foreign import lib "linux_x64/meshoptimizer.linux.a"
+    } else when ODIN_ARCH == .arm64 {
+        foreign import lib "linux_arm64/meshoptimizer.linux.a"
+    } else {
+        #panic("vendor/meshopt supports linux amd64/arm64 only")
+    }
 } else {
-    foreign import lib "meshoptimizer.linux.a"
+    #panic("vendor/meshopt supports Windows, Darwin, and Linux only")
 }
 
 

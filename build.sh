@@ -1,21 +1,6 @@
 #!/usr/bin/env bash
 
-# Exit on any error
-set -e
-
-# Check if cmake is available
-if ! command -v cmake &>/dev/null; then
-    echo "ERROR: cmake is not installed or not in PATH"
-    echo "Please install cmake: sudo apt-get install cmake (Ubuntu/Debian)"
-    exit 1
-fi
-
-# Check if build tools are available
-if ! command -v make &>/dev/null && ! command -v ninja &>/dev/null; then
-    echo "ERROR: No build system found (make or ninja)"
-    echo "Please install build tools: sudo apt-get install build-essential (Ubuntu/Debian)"
-    exit 1
-fi
+set -euo pipefail
 
 clone_at_revision() {
     local dir="$1"
@@ -35,26 +20,41 @@ clone_at_revision() {
 
 clone_at_revision meshoptimizer 3c1647e4aeb2cbdca6f11d4f4f4f694da2ff49a4 https://github.com/zeux/meshoptimizer --depth=1
 
-# Set source and build directories
+linux_arch_dir() {
+    case "$(uname -m)" in
+        x86_64 | amd64) echo "linux_x64" ;;
+        aarch64 | arm64) echo "linux_arm64" ;;
+        *) echo "linux_$(uname -m)" ;;
+    esac
+}
+
+darwin_arch_dir() {
+    case "$(uname -m)" in
+        x86_64 | amd64) echo "darwin_x64" ;;
+        aarch64 | arm64) echo "darwin_arm64" ;;
+        *) echo "darwin_$(uname -m)" ;;
+    esac
+}
+
 SOURCE_DIR="./meshoptimizer"
-BINARIES_DIR="./build"
-if [ $(uname -s) = 'Darwin' ]; then
-    BINARIES_DIR="./build"
-    NCORE=$(sysctl -n hw.ncpu)
+if [ "$(uname -s)" = 'Darwin' ]; then
+    CPU=$(sysctl -n hw.ncpu)
+    ARCH_DIR=$(darwin_arch_dir)
     LIB_EXT=darwin
 else
-    NCORE=$(nproc)
+    CPU=$(nproc)
+    ARCH_DIR=$(linux_arch_dir)
     LIB_EXT=linux
 fi
+BINARIES_DIR="./build_$ARCH_DIR"
+mkdir -p "./$ARCH_DIR"
 
-# Configure the build with cmake
 echo "Configuring build..."
-cmake "$SOURCE_DIR" -S "$SOURCE_DIR" -B "$BINARIES_DIR" -DCMAKE_BUILD_TYPE=Release
+cmake -S "$SOURCE_DIR" -B "$BINARIES_DIR" -DCMAKE_BUILD_TYPE=Release
 
-# Build the project
 echo "Building project..."
-cmake --build "$BINARIES_DIR" --config Release -j$NCORE
+cmake --build "$BINARIES_DIR" --config Release -j"$CPU"
 
-cp $BINARIES_DIR/libmeshoptimizer.a ./meshoptimizer.$LIB_EXT.a
+cp "$BINARIES_DIR/libmeshoptimizer.a" "./$ARCH_DIR/meshoptimizer.$LIB_EXT.a"
 
 echo "Build completed successfully!"
