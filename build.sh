@@ -36,25 +36,37 @@ darwin_arch_dir() {
     esac
 }
 
-SOURCE_DIR="./meshoptimizer"
+BASE="$(cd "$(dirname "$0")" && pwd)"
+SOURCE_DIR="$BASE/meshoptimizer"
 if [ "$(uname -s)" = 'Darwin' ]; then
     CPU=$(sysctl -n hw.ncpu)
     ARCH_DIR=$(darwin_arch_dir)
     LIB_EXT=darwin
+    SHARED_EXT=dylib
 else
     CPU=$(nproc)
     ARCH_DIR=$(linux_arch_dir)
     LIB_EXT=linux
+    SHARED_EXT=so
 fi
-BINARIES_DIR="./build_$ARCH_DIR"
-mkdir -p "./$ARCH_DIR"
+STATIC_BUILD_DIR="$BASE/build_static_$ARCH_DIR"
+SHARED_BUILD_DIR="$BASE/build_shared_$ARCH_DIR"
+OUTPUT_DIR="$BASE/$ARCH_DIR"
+mkdir -p "$OUTPUT_DIR"
 
-echo "Configuring build..."
-cmake -S "$SOURCE_DIR" -B "$BINARIES_DIR" -DCMAKE_BUILD_TYPE=Release
+echo "Configuring static build..."
+cmake -S "$SOURCE_DIR" -B "$STATIC_BUILD_DIR" -DCMAKE_BUILD_TYPE=Release -DMESHOPT_BUILD_SHARED_LIBS=OFF
 
-echo "Building project..."
-cmake --build "$BINARIES_DIR" --config Release -j"$CPU"
+echo "Building static project..."
+cmake --build "$STATIC_BUILD_DIR" --config Release -j"$CPU"
 
-cp "$BINARIES_DIR/libmeshoptimizer.a" "./$ARCH_DIR/meshoptimizer.$LIB_EXT.a"
+echo "Configuring shared build..."
+cmake -S "$SOURCE_DIR" -B "$SHARED_BUILD_DIR" -DCMAKE_BUILD_TYPE=Release -DMESHOPT_BUILD_SHARED_LIBS=ON
+
+echo "Building shared project..."
+cmake --build "$SHARED_BUILD_DIR" --config Release -j"$CPU"
+
+cp "$STATIC_BUILD_DIR/libmeshoptimizer.a" "$OUTPUT_DIR/meshoptimizer.$LIB_EXT.a"
+cp "$SHARED_BUILD_DIR/libmeshoptimizer.$SHARED_EXT" "$OUTPUT_DIR/libmeshoptimizer.$SHARED_EXT"
 
 echo "Build completed successfully!"

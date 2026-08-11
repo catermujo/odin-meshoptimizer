@@ -14,33 +14,46 @@ when ODIN_OS == .Linux {
     @(require) foreign import _cpp "system:c++"
 }
 
+LINK :: #config(MESHOPT_LINK, "static")
+
 when ODIN_OS == .Windows {
     when ODIN_ARCH == .amd64 {
-        foreign import lib "windows_x64/meshoptimizer.lib"
+        LIB_PATH :: "windows_x64/meshoptimizer.lib"
     } else when ODIN_ARCH == .arm64 {
-        foreign import lib "windows_arm64/meshoptimizer.lib"
+        LIB_PATH :: "windows_arm64/meshoptimizer.lib"
     } else {
         #panic("vendor/meshopt supports windows amd64/arm64 only")
     }
 } else when ODIN_OS == .Darwin {
     when ODIN_ARCH == .amd64 {
-        foreign import lib "darwin_x64/meshoptimizer.darwin.a"
+        when LINK == "static" {
+            LIB_PATH :: "darwin_x64/meshoptimizer.darwin.a"
+        } else {
+            LIB_PATH :: "darwin_x64/libmeshoptimizer.dylib"
+        }
     } else when ODIN_ARCH == .arm64 {
-        foreign import lib "darwin_arm64/meshoptimizer.darwin.a"
+        when LINK == "static" {
+            LIB_PATH :: "darwin_arm64/meshoptimizer.darwin.a"
+        } else {
+            LIB_PATH :: "darwin_arm64/libmeshoptimizer.dylib"
+        }
     } else {
         #panic("vendor/meshopt supports Darwin amd64/arm64 only")
     }
 } else when ODIN_OS == .Linux {
     when ODIN_ARCH == .amd64 {
-        foreign import lib "linux_x64/meshoptimizer.linux.a"
+        LIB_PATH :: "linux_x64/meshoptimizer.linux.a"
     } else when ODIN_ARCH == .arm64 {
-        foreign import lib "linux_arm64/meshoptimizer.linux.a"
+        LIB_PATH :: "linux_arm64/meshoptimizer.linux.a"
     } else {
         #panic("vendor/meshopt supports linux amd64/arm64 only")
     }
 } else {
     #panic("vendor/meshopt supports Windows, Darwin, and Linux only")
 }
+
+@(export)
+foreign import lib {LIB_PATH}
 
 
 VERSION :: 250
