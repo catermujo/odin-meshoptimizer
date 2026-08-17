@@ -8,6 +8,12 @@ package meshopt
 
 import "core:c"
 
+when ODIN_OS == .Linux {
+    @(require) foreign import _cpp "system:stdc++"
+} else when ODIN_OS == .Darwin {
+    @(require) foreign import _cpp "system:c++"
+}
+
 when ODIN_OS == .Windows {
     when ODIN_ARCH == .amd64 {
         foreign import lib "windows_x64/meshoptimizer.lib"
